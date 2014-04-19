@@ -46,8 +46,6 @@
         db.deleteObjectStore(el);
       });
       that.tablesToBeRemoved.length = 0;
-
-      console.log('UPGRADE DONE');
     };
   }
 
@@ -66,6 +64,33 @@
   function getTable(tablename, cb) {
     this.getTransaction(tablename, function(xa) {
       cb(xa.objectStore(tablename));
+    });
+  }
+
+  //adds a new row indto a table
+  function addRow(tablename, row, cb) {
+    this.getTable(tablename, function(tb) {
+      tb.add(row).onsuccess = function(ev) {
+        cb(ev.target.result);
+      };
+    });
+  }
+
+  //updates the fields of a row
+  function updateRow(tablename, row, cb) {
+    this.getTable(tablename, function(tb) {
+      tb.put(row).onsuccess = function(ev) {
+        cb(ev.target.result);
+      };
+    });
+  }
+
+  //removes a row from a table
+  function deleteRow(tablename, rowId, cb) {
+    this.getTable(tablename, function(tb) {
+      tb.delete(rowId).onsuccess = function(ev) {
+        cb(ev.target.result);
+      };
     });
   }
 
@@ -115,7 +140,12 @@
     removeTable: removeTable,
     getTransaction: getTransaction,
     getTable: getTable,
-    query: query
+    query: query,
+    addRow: addRow,
+    insertRow: addRow,
+    updateRow: updateRow,
+    deleteRow: deleteRow,
+    removeRow: deleteRow
   };
 
   window.zonDB = zonDB;
