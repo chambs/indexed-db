@@ -5,6 +5,7 @@ module.exports = function(grunt) {
   grunt.initConfig({
     uglify: {
       options: {
+        sourceMap: true
       },
       dist: {
         src: 'zondb.js',
