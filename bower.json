@@ -1,0 +1,40 @@
+{
+  "name": "zonDB",
+  "version": "0.1.0",
+  "homepage": "https://github.com/chambs/indexed-db",
+  "authors": [
+    "Willian Carvalho <o.chambs@gmail.com>"
+  ],
+  "description": "An API that makes it easier to use IndexedDB",
+  "main": "zondb.js",
+  "moduleType": [
+    "globals"
+  ],
+  "keywords": [
+    "indexdb",
+    "api",
+    "storage",
+    "offline",
+    "app",
+    "offline",
+    "database",
+    "db",
+    "dbs",
+    "offline",
+    "application",
+    "webapp",
+    "web",
+    "application",
+    "web",
+    "indexed",
+    "db"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
