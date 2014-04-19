@@ -5,17 +5,19 @@
 </head>
 <body>
   <div class="frm">
-    <div>Name: <input type="text" id="name" name="name" maxlength="20"></div>
-    <div>Age: <input type="text" id="age" name="age" maxlength="2"></div>
-    <div><button class="add-user">Add</button></div>
+    <input type="hidden" id="id" value="">
+    <div>Name: <input type="text" id="name" maxlength="20"></div>
+    <div>Age: <input type="text" id="age" maxlength="2"></div>
+    <div><button class="add-user">Save</button></div>
   </div>
 
-  <table id="log" border="1">
+  <table id="log" border="1" width="500">
     <thead>
       <tr>
         <th>ID</th>
         <th>Name</th>
         <th>Age</th>
+        <th></th>
       </tr>
     </thead>
     <tbody></tbody>
