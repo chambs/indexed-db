@@ -1,122 +1,131 @@
-var db;
-
-function onSucess(ev) {
-	console.log('success');
-  db = this.result;
-
-  db.onerror = function(ev) {
-    console.log(ev);
-    alert('database error: ' + ev.target.error.message);
-  };
-
-  var transaction = db.transaction('name', 'readwrite');
-  var objectStore = transaction.objectStore('name');
-
-  var req = objectStore.get('o.chambs@gmail.com');
-  req.onsuccess = function(event) {
-    console.log(req, event, 'SUCCESS');
-  };
-
-  //retrieve all rows
-  objectStore.openCursor().onsuccess = function(event) {
-    var cursor = event.target.result;
-    if(cursor) {
-      console.log(cursor.key, cursor.value, '<<<');
-      cursor.continue();
-    }
-  };
-}
-
-function onError(ev) {
-  console.log('error');
-}
-
-function onUpgradeNeeded(ev) {
-  console.log('update fired');
-  var db = ev.target.result,
-      objectStore = db.createObjectStore('name', {
-        keyPath: 'myKey'
-      });
-  ;
-}
-
-function app() {
-	var request = indexedDB.open('mydb', 2);
-
-	request.onsuccess = onSucess;
-	request.onerror = onError;
-  request.onupgradeneeded = onUpgradeNeeded;
-}
-
 (function(window) {
+  //tries to get the indexedDB object wherever it is (if it exists)
   if(!window.indexedDB) {
     window.indexedDB = window.indexedDB || window.webkitIndexedDB || window.mozIndexedDB || window.msIndexedDB;
   }
 
+
+  //tries to open a database connection, configuring stuff like the "tables" (objectStores),
+  //sets global error messages and get things ready to be executed whenever the connection has been estabilished
+  function open(cb) {
+    var that = this;
+    this.request = indexedDB.open(this.name, this.version);
+
+    this.request.onsuccess = function(ev) {
+      that.dbReady = true;
+      that.db = this.result;
+
+      //global error
+      that.db.onerror = function(ev) {
+        console.log(ev);
+        alert('database error: ' + ev.target.error.message);
+      };
+
+      that.actionsToBeExecuted.forEach(function(el) {
+        el(that.db);
+      });
+      that.actionsToBeExecuted.length = 0;
+
+      if(cb) cb(null, ev.target.result);
+    };
+
+    this.request.onerror = function(ev) {
+      if(cb) cb(ev.target);
+    };
+
+    this.request.onupgradeneeded = function(ev) {
+      var db = ev.target.result,
+          tbData, tbName;
+
+      that.tablesToBeAdded.forEach(function(el) {
+        tbName = el.tableName;
+        delete el.name;
+        db.createObjectStore(tbName, el);
+      });
+      that.tablesToBeAdded.length = 0;
+
+      that.tablesToBeRemoved.forEach(function(el) {
+        db.deleteObjectStore(el);
+      });
+      that.tablesToBeRemoved.length = 0;
+
+      console.log('UPGRADE DONE');
+    };
+  }
+
+  //gets a database transaction and passes it to a callback function
+  function getTransaction(tables, cb) {
+    if(this.dbReady) {
+      cb(this.db.transaction(tables, 'readwrite'));
+    } else {
+      this.actionsToBeExecuted.push(function(db) {
+        cb(db.transaction(tables, 'readwrite'));
+      });
+    }
+  }
+
+  //gets a database table and passes it to a callback function
+  function getTable(tablename, cb) {
+    this.getTransaction(tablename, function(xa) {
+      cb(xa.objectStore(tablename));
+    });
+  }
+
+  //creates a cursor and tries to iterate over the results, and then passes it to a callback function
+  function query(tablename, cb) {
+    var result = [];
+    this.getTable(tablename, function(tb) {
+      tb.openCursor().onsuccess = function(ev) {
+        var cursor = ev.target.result;
+
+        if(cursor) {
+          result.push(cursor.value);
+          cursor.continue();
+        } else {
+          cb(result);
+        }
+      };
+    });
+  }
+
+  //adds a new "table" to the database. it requires DB version to be increased
+  function addTable(options) {
+    this.tablesToBeAdded.push(options);
+    return this;
+  }
+
+  //removes a "table" from the database. it requires DB version to be increased
+  function removeTable(tbName) {
+    this.tablesToBeRemoved.push(tbName);
+    return this;
+  }
+
   function zonDB(dbName, dbVersion) {
+    this.db = null;
     this.name = dbName;
     this.version = dbVersion;
     this.request = null;
     this.dbReady = false;
     this.tablesToBeAdded = [];
     this.tablesToBeRemoved = [];
+    this.actionsToBeExecuted = [];
   }
 
   zonDB.prototype = {
-    open: function() {
-      var that = this;
-      this.request = indexedDB.open(this.name, this.version);
-
-      this.request.onsuccess = function(ev) {
-        that.dbReady = true;
-        console.log(ev.target, 'SUCCESS');
-      };
-
-      this.request.onerror = function(ev) {
-        console.log(ev.target, 'ERROR');
-      };
-
-      this.request.onupgradeneeded = function(ev) {
-        var db = ev.target.result,
-            tbData, tbName;
-        window.foo = db;
-
-        that.tablesToBeAdded.forEach(function(el) {
-          tbName = el.tableName;
-          delete el.name;
-          db.createObjectStore(tbName, el);
-        });
-
-        that.tablesToBeRemoved.forEach(function(el) {
-          db.deleteObjectStore(el);
-        });
-
-        that.tablesToBeAdded.length = 0;
-        console.log('UPGRADE DONE');
-      };
-    },
-
-    addTable: function(options) {
-      this.tablesToBeAdded.push(options);
-    },
-
-    removeTable: function(tbName) {
-      this.tablesToBeRemoved.push(tbName);
-    }
+    open: open,
+    addTable: addTable,
+    removeTable: removeTable,
+    getTransaction: getTransaction,
+    getTable: getTable,
+    query: query
   };
 
   window.zonDB = zonDB;
-
 })(this);
 
-var todo = new zonDB('todo', 4);
-
-todo.removeTable('undefined');
-
-/*
-todo.addTable({
-  tableName: 'user',
-  keyPath: 'id'
-});
-*/
+var todo = new zonDB('todo', 6);
 todo.open();
+
+todo.query('user', function(res) {
+  console.log(res);
+});
