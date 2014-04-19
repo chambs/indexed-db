@@ -1,22 +1,41 @@
-var log = document.querySelector('#log');
-var todo = new zonDB('todo', 6);
+var table = $('#log > tbody');
+var todo = new zonDB('todo', 8);
 
-function append(txt) {
-  var p = document.createElement('p');
-  p.appendChild(document.createTextNode(txt));
-  log.appendChild(p);
+todo.addTable({
+  tableName: 'user',
+  keyPath: 'id',
+  autoIncrement: true
+});
+
+function addUser() {
+  var name = $('#name').val(),
+      age = $('#age').val(),
+      userData = {
+        name: name,
+        age: age
+      };
+
+  todo.getTable('user', function(tb) {
+    tb.add(userData);
+  });
 }
+
+$(document).on('click', '.add-user', function() {
+  addUser();
+});
 
 todo.open(function(err, data) {
   if(err) {
-    return append('Database connection failed: ' + err.message);
+    return alert('Database connection failed: ' + err.message);
   } 
-
-  append('Database connection success!');
 });
 
 todo.query('user', function(res) {
   res.forEach(function(row) {
-    append(JSON.stringify(row));
+    table.append("<tr>");
+    table.append("<td>" + row.id + "</td>");
+    table.append("<td>" + row.name + "</td>");
+    table.append("<td>" + row.age + "</td>");
+    table.append("</tr>");
   });
 });
