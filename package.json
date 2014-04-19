@@ -1,0 +1,38 @@
+{
+  "name": "zonDB",
+  "version": "0.1.0",
+  "description": "An API for manipulating IndexedDB",
+  "main": "Gruntfile.js",
+  "directories": {
+    "example": "examples"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chambs/indexed-db.git"
+  },
+  "keywords": [
+    "indexeddb",
+    "indexed",
+    "db",
+    "api",
+    "storage",
+    "database",
+    "api",
+    "webapp",
+    "offline",
+    "app"
+  ],
+  "author": "Willian Carvalho",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/chambs/indexed-db/issues"
+  },
+  "homepage": "https://github.com/chambs/indexed-db",
+  "devDependencies": {
+    "grunt": "^0.4.4",
+    "grunt-contrib-uglify": "^0.4.0"
+  }
+}
