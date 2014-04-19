@@ -4,7 +4,6 @@
     window.indexedDB = window.indexedDB || window.webkitIndexedDB || window.mozIndexedDB || window.msIndexedDB;
   }
 
-
   //tries to open a database connection, configuring stuff like the "tables" (objectStores),
   //sets global error messages and get things ready to be executed whenever the connection has been estabilished
   function open(cb) {
@@ -17,8 +16,7 @@
 
       //global error
       that.db.onerror = function(ev) {
-        console.log(ev);
-        alert('database error: ' + ev.target.error.message);
+        cb(ev.target.error);
       };
 
       that.actionsToBeExecuted.forEach(function(el) {
@@ -30,7 +28,7 @@
     };
 
     this.request.onerror = function(ev) {
-      if(cb) cb(ev.target);
+      if(cb) cb(ev.target.error);
     };
 
     this.request.onupgradeneeded = function(ev) {
@@ -122,10 +120,3 @@
 
   window.zonDB = zonDB;
 })(this);
-
-var todo = new zonDB('todo', 6);
-todo.open();
-
-todo.query('user', function(res) {
-  console.log(res);
-});
